@@ -1,5 +1,7 @@
 import pygame as pg
 import sys
+import csv
+import time
 from settings import *
 from sprites import *
 
@@ -13,15 +15,43 @@ class Game:
         self.load_data()
 
     def load_data(self):
-        pass
+        args = sys.argv
+        timestr = time.strftime("%Y%m%d-%H%M%S")
+        if len(args) < 2:
+            self.filename = timestr + ".csv"
+            self.grid = [[0 for x in range(GRIDWIDTH)] for y in range(GRIDHEIGHT)]
+            self.grid[0][0] = 1
+            self.grid[0][GRIDHEIGHT-1] = 2
+            self.grid[GRIDWIDTH-1][0] = 3
+            self.grid[GRIDWIDTH-1][GRIDHEIGHT-1] = 4
+        else:
+            self.grid = []
+            self.filename = args[1]
+            with open(self.filename,'r') as my_csv:
+                csvReader = csv.reader(my_csv,delimiter=',')
+                for row in csvReader:
+                    self.grid.append(list(map(int,row)))
+            print(self.grid)
+            print("+++++++++++++++++++")
 
     def new(self):
         # initialize all variables and do all the setup for a new game
         self.all_sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
         self.player = Player(self, 10, 10)
-        for x in range(10, 20):
-            Wall(self, x, 5)
+        for x in range(len(self.grid)):
+            for y in range(len(self.grid[0])):
+                print(self.grid[x][y])
+                if self.grid[x][y] == 1:
+                    print("GREEN")
+                    Wall(self, x, y,GREEN)
+                elif self.grid[x][y] == 2:
+                    Wall(self, x, y, BLUE)
+                elif self.grid[x][y] == 3:
+                    Wall(self, x, y, RED)
+                elif self.grid[x][y] == 4:
+                    Wall(self, x, y, YELLOW)
+            
 
     def run(self):
         # game loop - set self.playing = False to end the game
@@ -41,6 +71,9 @@ class Game:
             self.draw()
 
     def quit(self):
+        with open(self.filename,'w') as my_csv:
+            csvWriter = csv.writer(my_csv,delimiter=',')
+            csvWriter.writerows(self.grid)
         pg.quit()
         sys.exit()
 
@@ -66,26 +99,28 @@ class Game:
             if event.type == pg.QUIT:
                 self.quit()
             if event.type == pg.KEYDOWN:
-                if event.key == pg.K_ESCAPE:
-                    self.quit()
-                if event.key == pg.K_LEFT:
-                    self.player.move(dx=-1)
-                if event.key == pg.K_RIGHT:
-                    self.player.move(dx=1)
-                if event.key == pg.K_UP:
-                    self.player.move(dy=-1)
-                if event.key == pg.K_DOWN:
-                    self.player.move(dy=1)
-            elif event.type == pg.MOUSEBUTTONDOWN:
-                # User clicks the mouse. Get the position
+                 # User clicks the mouse. Get the position
                 pos = pg.mouse.get_pos()
                 # Change the x/y screen coordinates to grid coordinates
-                column = pos[0] // (TILESIZE)
-                row = pos[1] // (TILESIZE)
+                x = pos[0] // (TILESIZE)
+                y = pos[1] // (TILESIZE)
                 # Set that location to one
                 #grid[row][column] = 1
-                self.player.move(dx=column,dy=row)
-                print("Click ", pos, "Grid coordinates: ", row, column)
+
+                if event.key == pg.K_ESCAPE:
+                    self.quit()
+                if event.key == pg.K_1:
+                    Wall(self, x, y,GREEN)
+                    self.grid[y][x] = 1
+                if event.key == pg.K_2:
+                    Wall(self, x, y, BLUE)
+                    self.grid[y][x] = 2
+                if event.key == pg.K_3:
+                    Wall(self, x, y, RED)
+                    self.grid[y][x] = 3
+                if event.key == pg.K_4:
+                    Wall(self, x, y, YELLOW)
+                    self.grid[y][x] = 4
 
     def show_start_screen(self):
         pass
