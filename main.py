@@ -38,6 +38,7 @@ class Game:
         # initialize all variables and do all the setup for a new game
         self.all_sprites = pg.sprite.Group()
         self.walls = pg.sprite.Group()
+        self.cells  = pg.sprite.Group()
         self.player = Player(self, 10, 10)
         for x in range(len(self.grid)):
             for y in range(len(self.grid[0])):
@@ -81,10 +82,15 @@ class Game:
         self.all_sprites.update()
 
     def draw_grid(self):
-        for x in range(0, WIDTH+1, TILESIZE):
-            pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
-        for y in range(0, HEIGHT, TILESIZE):
-            pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
+        #for x in range(0, WIDTH+1, TILESIZE):
+            #pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
+        for y in range (0, GRIDHEIGHT, 2):
+            for x in range(0, GRIDWIDTH):
+                CellBorder(self,x,y)
+                Cell(self,x,y)
+        #for y in range(0, HEIGHT, TILESIZE):
+            #pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
+        pg.draw.line(self.screen, LIGHTGREY, (WIDTH, 0), (WIDTH, HEIGHT))
 
     def draw(self):
         self.screen.fill(BGCOLOR)
