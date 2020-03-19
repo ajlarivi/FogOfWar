@@ -41,7 +41,6 @@ class Game:
         self.player = Player(self, 10, 10)
         for x in range(len(self.grid)):
             for y in range(len(self.grid[0])):
-                print(self.grid[x][y])
                 if self.grid[x][y] == 1:
                     print("GREEN")
                     Wall(self, x, y,GREEN)
