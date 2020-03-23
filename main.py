@@ -59,14 +59,6 @@ class Game:
         while self.playing:
             self.dt = self.clock.tick(FPS) / 1000
             self.events()
-            pos = pg.mouse.get_pos()
-            # Change the x/y screen coordinates to grid coordinates
-            column = pos[0] // (TILESIZE)
-            row = pos[1] // (TILESIZE)
-            # Set that location to one
-            #grid[row][column] = 1
-            if column < GRIDWIDTH:
-                self.player.move(dx=column,dy=row)
             self.update()
             self.draw()
 
@@ -81,13 +73,46 @@ class Game:
         # update portion of the game loop
         self.all_sprites.update()
 
+    def cube_to_oddr(self, cube):
+        col = cube[0] + (cube[3] - (cube[2]&1)) / 2
+        row = cube.z
+        return (col, row)
+
+    def oddr_to_cube(self, hex):
+        x = hex[0] - (hex[1] - (hex[1]&1)) / 2
+        z = hex[1]
+        y = -x-z
+        return (x, y, z)
+
+    def cube_distance(self, a, b):
+        return max(abs(a[0] - b[0]), abs(a[1] - b[1]), abs(a[2] - b[2]))
+
+    #given two indeces, return the distance between the two coresponding hexes
+    def dist(self,i1,i2):
+        ac = self.oddr_to_cube(i1)
+        bc = self.oddr_to_cube(i2)
+        return self.cube_distance(ac, bc)
+
+    def find_center(self):
+        x = (GRIDWIDTH // 2)
+        y = (GRIDHEIGHT // 2)
+        return (x, y)
+
     def draw_grid(self):
         #for x in range(0, WIDTH+1, TILESIZE):
             #pg.draw.line(self.screen, LIGHTGREY, (x, 0), (x, HEIGHT))
+        center = self.find_center()
+
         for y in range (0, GRIDHEIGHT, 2):
             for x in range(0, GRIDWIDTH):
-                CellBorder(self,x,y)
-                Cell(self,x,y)
+                if self.dist(center, (x,y)) <= BOARDRADIUS:
+                    CellBorder(self,x,y)
+                    Cell(self,x,y,x+y)
+        for y in range (1, GRIDHEIGHT, 2):
+            for x in range(0, GRIDWIDTH):
+                if self.dist(center, (x,y)) <= BOARDRADIUS:
+                    CellBorder(self,x+0.5,y)
+                    Cell(self,x+0.5,y,x+y)
         #for y in range(0, HEIGHT, TILESIZE):
             #pg.draw.line(self.screen, LIGHTGREY, (0, y), (WIDTH, y))
         pg.draw.line(self.screen, LIGHTGREY, (WIDTH, 0), (WIDTH, HEIGHT))
@@ -97,6 +122,14 @@ class Game:
         self.draw_grid()
         self.all_sprites.draw(self.screen)
         pg.display.flip()
+
+    def get_grid_pos():
+        pos = pg.mouse.get_pos()
+        y = pos[1] // (TILESIZE)
+        if y%2 == 0:
+            pass
+        else:
+            x = pos[0] // (TILESIZE)
 
     def events(self):
         # catch all events here
